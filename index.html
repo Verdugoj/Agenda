@@ -4,9 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Agenda Libreta</title>
+    
+    <!-- Configuración PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2e5932">
+    <link rel="apple-touch-icon" href="1794070431331.jpg">
+    <link rel="icon" href="1794070431331.jpg" type="image/jpeg">
+
+    <!-- Librerías de Diseño y Funcionalidad -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
@@ -308,8 +318,19 @@
         <div id="toast" class="absolute top-12 left-4 right-4 bg-[#2e5932] text-white px-4 py-2 rounded shadow-lg transition-all duration-300 opacity-0 -translate-y-full pointer-events-none z-[60] flex items-center space-x-2 text-sm text-center justify-center"><span id="toast-message"></span></div>
     </div>
 
-    <!-- Local Storage Logic -->
+    <!-- PWA & Local Storage Logic -->
     <script>
+        // Registro del Service Worker para que sea instalable
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').then(registration => {
+              console.log('SW registrado con éxito');
+            }).catch(err => {
+              console.log('Error al registrar SW:', err);
+            });
+          });
+        }
+
         let allEvents = [];
         let allNotes = [];
         let displayedMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -370,8 +391,8 @@
 
         function getBorderStyle(item) {
             const type = item.borderType || 'normal';
-            if (type === 'important') return 'border-color: #FFC107; border-width: 3px;';
-            if (type === 'urgent') return 'border-color: #F44336; border-width: 3px;';
+            if (type === 'important') return 'border-color: #eab308; border-width: 3px;';
+            if (type === 'urgent') return 'border-color: #ef4444; border-width: 3px;';
             if (type === 'custom') return `border-color: ${item.borderColor1 || '#4a5568'}; border-width: 3px;`;
             if (type === 'combined') {
                 const c1 = item.borderColor1 || '#3b82f6';
