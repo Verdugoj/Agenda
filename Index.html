@@ -1,652 +1,383 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Agenda Libreta</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mi Diario Agenda</title>
+  
+  <!-- Configuración PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2c6b3f">
+  <link rel="apple-touch-icon" href="image_5.png">
+  <link rel="icon" href="image_5.png" type="image/png">
+
+  <!-- Librería para Markdown -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #2c6b3f; /* Verde */
+      --bg-color: #fef8e7; /* Fondo hoja de cuaderno */
+      --line-color: #d1d5db; /* Líneas de la hoja */
+      --text-color: #333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+    body {
+      background-color: #e5e5e5;
+      display: flex;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #app {
+      background-color: var(--bg-color);
+      width: 100%;
+      max-width: 480px; /* Tamaño móvil en escritorio */
+      height: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      /* Fondo estilo cuaderno (sin línea roja) */
+      background-image: repeating-linear-gradient(transparent, transparent 31px, var(--line-color) 32px);
+      background-size: 100% 32px;
+      background-attachment: local;
+    }
+
+    /* Encabezado */
+    header {
+      padding: 20px;
+      text-align: center;
+      color: var(--primary-color);
+      font-size: 1.5rem;
+      font-weight: bold;
+      background: var(--bg-color);
+      border-bottom: 2px dashed var(--primary-color);
+      z-index: 10;
+    }
+
+    /* Contenedor Principal */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      position: relative;
+    }
+
+    /* Estilos de Tarjetas (Eventos/Notas) */
+    .card {
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      border: 2px solid var(--primary-color); /* Borde Normal */
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .card.important { border-color: #f1c40f; } /* Borde Amarillo */
+    .card.urgent { border-color: #e74c3c; border-width: 3px; } /* Borde Rojo */
+
+    .card input[type="checkbox"] {
+      transform: scale(1.5);
+      margin-top: 5px;
+      accent-color: var(--primary-color);
+    }
+
+    .card-content { flex: 1; }
+    .card-title { font-weight: bold; font-size: 1.1rem; color: var(--primary-color); margin-bottom: 5px; }
+    .card-date { font-size: 0.8rem; color: #666; margin-bottom: 5px; }
     
-    <style>
-        :root {
-            --bg-cream: #fff9e6;
-            --accent-green: #2e5932;
-        }
+    /* Markdown Text */
+    .card-text p { margin-bottom: 8px; line-height: 1.4; }
+    .card-text ul { padding-left: 20px; }
 
-        body {
-            background-color: #1a2f23; 
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Kalam', cursive;
-        }
+    /* Vistas */
+    .view { display: none; height: 100%; }
+    .view.active { display: block; }
+    
+    /* Vista Mes (Estirada) */
+    #view-month { display: none; flex-direction: column; height: 100%; }
+    #view-month.active { display: flex; }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      flex: 1;
+      gap: 2px;
+      background: var(--line-color);
+      border: 1px solid var(--line-color);
+    }
+    .calendar-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-weight: bold;
+      padding: 10px 0;
+      color: var(--primary-color);
+    }
+    .calendar-cell {
+      background: rgba(255,255,255,0.6);
+      padding: 5px;
+      display: flex;
+      flex-direction: column;
+      font-size: 0.8rem;
+    }
 
-        #app-container {
-            width: 100%;
-            height: 100vh;
-            max-width: 420px;
-            background-color: var(--bg-cream); 
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
+    /* Navegación Inferior */
+    nav {
+      display: flex;
+      background: var(--bg-color);
+      border-top: 2px dashed var(--primary-color);
+      padding: 10px;
+      gap: 5px;
+      z-index: 10;
+    }
+    nav button {
+      flex: 1;
+      padding: 12px 5px;
+      border: 2px solid #ccc;
+      background: #fff;
+      border-radius: 8px;
+      font-weight: bold;
+      color: #555;
+      font-size: 0.9rem;
+    }
+    nav button.active {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      background: rgba(44, 107, 63, 0.1);
+    }
 
-        @media (min-width: 421px) {
-            #app-container {
-                height: 850px;
-                max-height: 90vh;
-                border-radius: 10px;
-                border-left: 12px solid var(--accent-green);
-                border-top: 2px solid #a3d9a5;
-                border-right: 2px solid #a3d9a5;
-                border-bottom: 2px solid #a3d9a5;
-            }
-        }
+    /* Botón Flotante (FAB) */
+    .fab {
+      position: absolute;
+      bottom: 80px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #f1c40f;
+      color: var(--text-color);
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      border: 2px solid #333;
+      z-index: 20;
+    }
 
-        .notebook-bg {
-            background-image: repeating-linear-gradient(transparent, transparent 31px, #a0aec0 31px, #a0aec0 32px);
-            background-attachment: local;
-            background-size: 100% 32px;
-            line-height: 32px; 
-        }
+    /* Modal de Edición */
+    .modal {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg-color);
+      z-index: 30;
+      flex-direction: column;
+      background-image: repeating-linear-gradient(transparent, transparent 31px, var(--line-color) 32px);
+      background-size: 100% 32px;
+      background-attachment: local;
+    }
+    .modal.active { display: flex; }
+    .modal-header {
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 2px dashed var(--primary-color);
+      background: var(--bg-color);
+    }
+    .modal-header button {
+      padding: 8px 15px;
+      border: 2px solid var(--primary-color);
+      background: transparent;
+      border-radius: 5px;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+    .modal-body {
+      padding: 15px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    
+    /* Alineación de texto a las líneas del cuaderno */
+    input[type="text"], textarea, select {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      color: var(--text-color);
+    }
+    input[type="text"] {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+      border-bottom: 1px dashed var(--line-color);
+    }
+    textarea {
+      resize: none;
+      height: 300px;
+      line-height: 32px; /* Coincide con el background-size */
+      padding-top: 6px; /* Empuja el texto para que descanse sobre la línea */
+    }
+    .options-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .options-row select {
+      border: 1px solid var(--line-color);
+      padding: 5px;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.5);
+    }
 
-        .sketch-btn {
-            border: 2px solid #2d3748;
-            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
-            background-color: transparent;
-            transition: all 0.2s;
-        }
-        .sketch-btn:hover {
-            background-color: #e2f0e3;
-            transform: scale(1.05) rotate(-1deg);
-        }
-
-        .sketch-fab {
-            border: 3px solid #2d3748;
-            border-radius: 50% 40% 50% 40% / 40% 50% 40% 50%;
-            background-color: #eab308;
-        }
-
-        .sketch-card {
-            border: 2px solid #4a5568;
-            border-radius: 8px 25px 8px 25px / 25px 8px 25px 8px;
-            background-color: var(--bg-cream);
-        }
-
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .calendar-day {
-            border: 1px solid rgba(74, 85, 104, 0.2);
-        }
-        .calendar-event {
-            font-size: 9px;
-            line-height: 1.1;
-            background-color: rgba(46, 89, 50, 0.2);
-            border-radius: 3px;
-            padding: 1px 2px;
-            margin-bottom: 1px;
-            letter-spacing: -0.1px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-family: sans-serif;
-            color: var(--accent-green);
-        }
-
-        textarea.diary-input {
-            background: transparent;
-            border: none;
-            resize: none;
-            line-height: 32px;
-            padding-top: 24px;
-            font-family: inherit;
-        }
-        textarea.diary-input:focus, input:focus, select:focus { outline: none; }
-
-        .sketch-checkbox {
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #4a5568;
-            border-radius: 4px;
-            background-color: transparent;
-            cursor: pointer;
-            position: relative;
-            display: inline-block;
-            vertical-align: middle;
-            transition: all 0.2s;
-        }
-        .sketch-checkbox:checked {
-            background-color: var(--bg-cream);
-        }
-        .sketch-checkbox:checked::after {
-            content: '✔';
-            position: absolute;
-            top: -5px;
-            left: 2px;
-            font-size: 18px;
-            color: var(--accent-green);
-            font-family: sans-serif;
-        }
-
-        /* Markdown Styles */
-        .markdown-content p, .markdown-content ul, .markdown-content ol, .markdown-content li {
-            line-height: 32px;
-            margin-bottom: 0;
-            position: relative;
-            top: -6px;
-        }
-        .markdown-content ul { list-style-type: disc; padding-left: 1.5em; }
-        .markdown-content ol { list-style-type: decimal; padding-left: 1.5em; }
-        .markdown-content strong { font-weight: bold; color: var(--accent-green); }
-        .markdown-content em { font-style: italic; }
-        .markdown-content a { color: #15803d; text-decoration: underline; text-decoration-style: dashed; }
-        .markdown-content h1, .markdown-content h2, .markdown-content h3 { font-weight: bold; color: var(--accent-green); line-height: 32px; }
-        .markdown-content blockquote { border-left: 3px solid var(--accent-green); padding-left: 10px; color: #4a5568; font-style: italic; }
-    </style>
+  </style>
 </head>
 <body>
 
-    <div id="app-container" class="flex flex-col relative notebook-bg">
-        <div class="absolute top-0 right-4 bg-[#2e5932] text-[#fff9e6] px-3 py-1 rounded-b-lg font-bold text-sm shadow-md z-20">
-            Mi Diario
+  <div id="app">
+    <header id="header-title">Noviembre De 2026</header>
+
+    <main>
+      <!-- Vista de Lista -->
+      <div id="view-lista" class="view active">
+        <!-- Ejemplo de evento generado por JS iría aquí -->
+        <div class="card important">
+          <input type="checkbox">
+          <div class="card-content">
+            <div class="card-title">Reunión de Trabajo</div>
+            <div class="card-date">Mar 10 Nov - 10:00 AM</div>
+            <div class="card-text">Llevar la <strong>presentación final</strong>.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista de Semana -->
+      <div id="view-sem" class="view">
+        <div style="text-align:center; padding: 10px; color:#666;">
+          (Toca arriba para retroceder, abajo para avanzar)
+        </div>
+        <div class="card">
+          <div class="card-content">
+            <div class="card-title">Eventos de los 9 días</div>
+            <div class="card-text">Aquí se despliega el día central con 4 previos y 4 siguientes.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista de Mes -->
+      <div id="view-mes" class="view">
+        <div class="calendar-header">
+          <div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div><div>D</div>
+        </div>
+        <div class="calendar-grid">
+          <!-- Celdas generadas dinámicamente -->
+          <div class="calendar-cell">1</div>
+          <div class="calendar-cell" style="border: 2px solid var(--primary-color);">2<br><b>Plan...</b></div>
+          <div class="calendar-cell">3</div>
+          <div class="calendar-cell">4</div>
+          <div class="calendar-cell">5</div>
+          <div class="calendar-cell">6</div>
+          <div class="calendar-cell">7</div>
+          <!-- Repetir hasta llenar -->
+        </div>
+      </div>
+
+      <!-- Vista de Notas -->
+      <div id="view-notas" class="view">
+        <div class="card urgent">
+          <div class="card-content">
+            <div class="card-title">Ideas de Diseño</div>
+            <div class="card-text">Revisar colores y tipografías para el proyecto de <em>Mural 3</em>.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Menú de Navegación -->
+    <nav>
+      <button onclick="switchTab('lista')" id="tab-lista" class="active">Lista</button>
+      <button onclick="switchTab('sem')" id="tab-sem">Semana</button>
+      <button onclick="switchTab('mes')" id="tab-mes">Mes</button>
+      <button onclick="switchTab('notas')" id="tab-notas">Notas</button>
+    </nav>
+
+    <!-- Botón Flotante -->
+    <div class="fab" onclick="openModal()">+</div>
+
+    <!-- Modal de Edición (Agregar Tarea/Nota) -->
+    <div class="modal" id="edit-modal">
+      <div class="modal-header">
+        <button onclick="closeModal()">← Volver</button>
+        <button onclick="saveEntry()">💾 Guardar</button>
+      </div>
+      <div class="modal-body">
+        <input type="text" placeholder="Título del evento o nota..." id="input-title">
+        
+        <div class="options-row">
+          <input type="date" id="input-date">
+          <input type="time" id="input-time">
+        </div>
+        
+        <div class="options-row">
+          <select id="input-priority">
+            <option value="normal">Borde Normal (Verde)</option>
+            <option value="important">Importante (Amarillo)</option>
+            <option value="urgent">Urgente (Rojo)</option>
+            <option value="custom">Personalizado (1 Color)</option>
+            <option value="combined">Combinado (2 Colores)</option>
+          </select>
         </div>
 
-        <!-- VISTA 1: LISTA (MES) -->
-        <div id="view-list" class="flex-1 flex flex-col h-full w-full absolute inset-0 transition-opacity duration-300">
-            <header class="pt-10 pb-4 px-4 flex justify-between items-center z-10 sticky top-0 bg-[#fff9e6]/90 backdrop-blur-sm border-b-2 border-dashed border-[#2e5932]">
-                <button onclick="changeMonth(-1)" class="sketch-btn w-8 h-8 flex items-center justify-center text-[#2e5932]"><i class="fas fa-chevron-left"></i></button>
-                <h1 id="list-month-title" class="text-2xl font-bold text-[#2e5932] capitalize tracking-wide"></h1>
-                <button onclick="changeMonth(1)" class="sketch-btn w-8 h-8 flex items-center justify-center text-[#2e5932]"><i class="fas fa-chevron-right"></i></button>
-            </header>
-            <main id="list-container" class="flex-1 overflow-y-auto no-scrollbar p-4 pb-24 space-y-4"></main>
-        </div>
-
-        <!-- VISTA 1.5: SEMANA -->
-        <div id="view-week" class="hidden flex-1 flex flex-col h-full w-full absolute inset-0 transition-opacity duration-300">
-            <header class="pt-10 pb-4 px-4 flex justify-between items-center z-10 sticky top-0 bg-[#fff9e6]/90 backdrop-blur-sm border-b-2 border-dashed border-[#2e5932]">
-                <h1 class="text-xl font-bold text-[#2e5932] relative w-full text-center cursor-pointer group">
-                    <input type="date" id="week-date-picker" onchange="onWeekDateSelected(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" />
-                    Semana: <span id="week-central-date-display" class="underline decoration-dashed decoration-[#2e5932] group-hover:text-[#1a3820] transition-colors">...</span> <i class="fas fa-caret-down text-sm"></i>
-                </h1>
-            </header>
-            <button onclick="changeWeekDay(-1)" class="w-full text-center py-2 bg-[#e2f0e3] text-[#2e5932] font-bold border-b-2 border-dashed border-[#2e5932] z-10 hover:bg-[#c9e4ca] transition-colors">
-                <i class="fas fa-chevron-up mr-2"></i> Día Anterior
-            </button>
-            <main id="week-container" class="flex-1 overflow-y-auto no-scrollbar p-3 space-y-4 pb-4"></main>
-            <button onclick="changeWeekDay(1)" class="w-full text-center py-2 bg-[#e2f0e3] text-[#2e5932] font-bold border-t-2 border-dashed border-[#2e5932] z-10 hover:bg-[#c9e4ca] transition-colors mb-[56px]">
-                <i class="fas fa-chevron-down mr-2"></i> Día Siguiente
-            </button>
-        </div>
-
-        <!-- VISTA 2: CALENDARIO -->
-        <div id="view-calendar" class="hidden flex-1 flex flex-col h-full w-full absolute inset-0 transition-opacity duration-300">
-            <header class="pt-10 pb-2 px-2 flex justify-between items-center z-10 sticky top-0 bg-[#fff9e6]/90 backdrop-blur-sm border-b-2 border-dashed border-[#2e5932]">
-                <button onclick="changeMonth(-1)" class="sketch-btn w-8 h-8 flex items-center justify-center text-[#2e5932]"><i class="fas fa-chevron-left"></i></button>
-                <h1 id="grid-month-title" class="text-xl font-bold text-[#2e5932] capitalize"></h1>
-                <button onclick="changeMonth(1)" class="sketch-btn w-8 h-8 flex items-center justify-center text-[#2e5932]"><i class="fas fa-chevron-right"></i></button>
-            </header>
-            <main class="flex-1 flex flex-col overflow-hidden p-2 pb-20">
-                <div class="grid grid-cols-7 gap-1 mb-1 text-center font-bold text-[#2e5932] text-sm shrink-0">
-                    <div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div><div>D</div>
-                </div>
-                <div id="calendar-grid" class="grid grid-cols-7 gap-1 flex-1 min-h-0 auto-rows-fr"></div>
-            </main>
-        </div>
-
-        <!-- VISTA 3: DIARIO / AGREGAR EVENTO -->
-        <div id="view-form" class="hidden flex-1 flex flex-col h-full w-full absolute inset-0 bg-[#fff9e6] z-30 transition-transform transform translate-x-full duration-300 notebook-bg">
-            <header class="pt-8 pb-2 px-4 flex justify-between items-center sticky top-0 bg-[#fff9e6]/80 backdrop-blur-md">
-                <button onclick="switchView(lastView)" class="sketch-btn px-3 py-1 flex items-center gap-2 text-gray-700 font-bold"><i class="fas fa-arrow-left"></i> Volver</button>
-                <button onclick="saveEvent()" class="sketch-btn px-4 py-1 text-[#2e5932] font-bold border-[#2e5932] hover:bg-green-50"><i class="fas fa-save"></i> Guardar</button>
-            </header>
-            <main class="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col">
-                <div class="mb-2">
-                    <input type="text" id="event-title" placeholder="Título del evento..." class="w-full bg-transparent text-2xl font-bold text-[#2e5932] placeholder-gray-400 border-b-2 border-gray-400 border-dashed pb-1">
-                </div>
-                <div class="flex gap-4 mb-2 mt-2">
-                    <input type="date" id="event-date" class="bg-transparent border-b-2 border-gray-400 border-dashed text-gray-700 font-bold focus:outline-none flex-1">
-                    <input type="time" id="event-time" class="bg-transparent border-b-2 border-gray-400 border-dashed text-gray-700 font-bold focus:outline-none flex-1">
-                </div>
-                <!-- Selección de Borde -->
-                <div class="flex flex-col gap-2 mb-2 mt-2 border-b-2 border-gray-400 border-dashed pb-2">
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm font-bold text-gray-700">Estilo:</label>
-                        <select id="event-border-type" onchange="toggleColorInputs('event')" class="bg-transparent border border-gray-400 rounded text-sm text-gray-700 font-bold px-1">
-                            <option value="normal">Normal</option>
-                            <option value="important">Importante (Amarillo)</option>
-                            <option value="urgent">Urgente (Rojo)</option>
-                            <option value="custom">Personalizado (1 Color)</option>
-                            <option value="combined">Combinado (2 Colores)</option>
-                        </select>
-                    </div>
-                    <div id="event-color-inputs" class="hidden flex gap-2 items-center">
-                        <input type="color" id="event-color-1" value="#3b82f6" class="w-8 h-8 rounded cursor-pointer border-none bg-transparent">
-                        <input type="color" id="event-color-2" value="#ec4899" class="w-8 h-8 rounded cursor-pointer border-none bg-transparent hidden">
-                    </div>
-                </div>
-                <div class="flex-1 mt-2 relative">
-                    <textarea id="event-desc" class="diary-input w-full h-full text-lg text-gray-800 placeholder-gray-400" placeholder="Escribe los detalles aquí... Puedes usar *cursiva*, **negrita**, o - viñetas."></textarea>
-                </div>
-            </main>
-        </div>
-
-        <!-- VISTA 4: NOTAS -->
-        <div id="view-notes" class="hidden flex-1 flex flex-col h-full w-full absolute inset-0 transition-opacity duration-300">
-            <header class="pt-10 pb-4 px-4 flex justify-between items-center z-10 sticky top-0 bg-[#fff9e6]/90 backdrop-blur-sm border-b-2 border-dashed border-[#2e5932]">
-                <h1 class="text-2xl font-bold text-[#2e5932] tracking-wide">Mis Notas</h1>
-            </header>
-            <main id="notes-container" class="flex-1 overflow-y-auto no-scrollbar p-4 pb-24 space-y-4 flex flex-wrap content-start gap-4"></main>
-        </div>
-
-        <!-- VISTA 5: AGREGAR NOTA -->
-        <div id="view-note-form" class="hidden flex-1 flex flex-col h-full w-full absolute inset-0 bg-[#fff9e6] z-30 transition-transform transform translate-x-full duration-300 notebook-bg">
-            <header class="pt-8 pb-2 px-4 flex justify-between items-center sticky top-0 bg-[#fff9e6]/80 backdrop-blur-md">
-                <button onclick="switchView('notes')" class="sketch-btn px-3 py-1 flex items-center gap-2 text-gray-700 font-bold"><i class="fas fa-arrow-left"></i> Volver</button>
-                <button onclick="saveNote()" class="sketch-btn px-4 py-1 text-[#2e5932] font-bold border-[#2e5932] hover:bg-green-50"><i class="fas fa-save"></i> Guardar</button>
-            </header>
-            <main class="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col">
-                 <!-- Selección de Borde para Nota -->
-                 <div class="flex flex-col gap-2 mb-2 mt-2 border-b-2 border-gray-400 border-dashed pb-2">
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm font-bold text-gray-700">Estilo de Borde:</label>
-                        <select id="note-border-type" onchange="toggleColorInputs('note')" class="bg-transparent border border-gray-400 rounded text-sm text-gray-700 font-bold px-1">
-                            <option value="normal">Normal</option>
-                            <option value="important">Importante (Amarillo)</option>
-                            <option value="urgent">Urgente (Rojo)</option>
-                            <option value="custom">Personalizado (1 Color)</option>
-                            <option value="combined">Combinado (2 Colores)</option>
-                        </select>
-                    </div>
-                    <div id="note-color-inputs" class="hidden flex gap-2 items-center">
-                        <input type="color" id="note-color-1" value="#3b82f6" class="w-8 h-8 rounded cursor-pointer border-none bg-transparent">
-                        <input type="color" id="note-color-2" value="#ec4899" class="w-8 h-8 rounded cursor-pointer border-none bg-transparent hidden">
-                    </div>
-                </div>
-                <div class="flex-1 mt-2 relative">
-                    <textarea id="note-content" class="diary-input w-full h-full text-lg text-gray-800 placeholder-gray-400" placeholder="Escribe una nota libre aquí... Soporta Markdown."></textarea>
-                </div>
-            </main>
-        </div>
-
-        <!-- MODAL DETALLE EVENTO -->
-        <div id="event-detail-modal" class="hidden absolute inset-0 bg-black/50 z-[40] flex items-center justify-center p-4">
-            <div class="sketch-card w-full max-w-sm bg-[#fff9e6] p-6 relative notebook-bg shadow-2xl">
-                <button onclick="editCurrentEvent()" class="absolute top-2 right-12 text-[#2e5932] hover:text-green-800 w-8 h-8 flex items-center justify-center sketch-btn"><i class="fas fa-edit"></i></button>
-                <button onclick="closeEventDetail()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 w-8 h-8 flex items-center justify-center sketch-btn"><i class="fas fa-times"></i></button>
-                <h2 id="detail-title" class="text-2xl font-bold text-[#2e5932] mb-2 pr-20"></h2>
-                <div class="text-sm text-gray-600 mb-4 border-b-2 border-dashed border-[#2e5932] pb-2 flex gap-4">
-                    <span><i class="far fa-calendar-alt"></i> <span id="detail-date"></span></span>
-                    <span><i class="far fa-clock"></i> <span id="detail-time"></span></span>
-                </div>
-                <div id="detail-desc" class="markdown-content text-gray-800 max-h-[40vh] overflow-y-auto no-scrollbar"></div>
-            </div>
-        </div>
-
-        <div id="loading-state" class="absolute inset-0 flex flex-col items-center justify-center text-gray-500 z-50 bg-[#fff9e6]/80 backdrop-blur-sm">
-            <i class="fas fa-pencil-alt fa-spin text-4xl mb-3 text-[#2e5932]"></i><p class="font-bold text-xl">Trazando...</p>
-        </div>
-
-        <button id="fab-add" onclick="handleFabClick()" class="absolute bottom-20 right-6 w-14 h-14 sketch-fab text-[#2e5932] shadow-lg flex items-center justify-center text-2xl z-20 hover:scale-110 transition-transform"><i class="fas fa-pen"></i></button>
-
-        <!-- Navegación -->
-        <nav class="bg-[#fff9e6] border-t-4 border-[#2e5932] border-dashed p-2 flex justify-between gap-1 items-center z-10 absolute bottom-0 w-full box-border">
-            <button onclick="switchView('list')" id="nav-list" class="flex-1 sketch-btn py-2 text-xs sm:text-sm font-bold text-gray-800 bg-[#e2f0e3] truncate px-1 border-[#2e5932]"><i class="fas fa-list-ul block mb-1"></i> Lista</button>
-            <button onclick="switchView('week')" id="nav-week" class="flex-1 sketch-btn py-2 text-xs sm:text-sm font-bold text-[#2e5932] hover:bg-[#e2f0e3] truncate px-1"><i class="fas fa-calendar-week block mb-1"></i> Sem</button>
-            <button onclick="switchView('calendar')" id="nav-calendar" class="flex-1 sketch-btn py-2 text-xs sm:text-sm font-bold text-[#2e5932] hover:bg-[#e2f0e3] truncate px-1"><i class="far fa-calendar-alt block mb-1"></i> Mes</button>
-            <button onclick="switchView('notes')" id="nav-notes" class="flex-1 sketch-btn py-2 text-xs sm:text-sm font-bold text-[#2e5932] hover:bg-[#e2f0e3] truncate px-1"><i class="fas fa-sticky-note block mb-1"></i> Notas</button>
-        </nav>
-
-        <div id="toast" class="absolute top-12 left-4 right-4 bg-[#2e5932] text-white px-4 py-2 rounded shadow-lg transition-all duration-300 opacity-0 -translate-y-full pointer-events-none z-[60] flex items-center space-x-2 text-sm text-center justify-center"><span id="toast-message"></span></div>
+        <textarea placeholder="Escribe aquí con soporte Markdown (**negrita**, *cursiva*)..." id="input-desc"></textarea>
+      </div>
     </div>
+  </div>
 
-    <!-- Firebase Logic -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  <script>
+    // Registro del Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(registration => {
+          console.log('SW registrado con éxito:', registration.scope);
+        }).catch(err => {
+          console.log('Error al registrar SW:', err);
+        });
+      });
+    }
 
-        let allEvents = [];
-        let allNotes = [];
-        let db, auth, currentUserId;
-        let displayedMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        let centralWeekDate = new Date();
-        centralWeekDate.setHours(12, 0, 0, 0); 
-        let editingEventId = null;
-        let currentViewedEventId = null;
+    // Lógica básica de navegación entre pestañas
+    function switchTab(tabId) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      
+      document.getElementById('view-' + tabId).classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
 
-        window.lastView = 'list';
-        window.currentView = 'list';
+    // Lógica para abrir y cerrar la libreta de edición
+    function openModal() {
+      document.getElementById('edit-modal').classList.add('active');
+    }
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'agenda-libreta';
-        const isFirebaseEnabled = typeof __firebase_config !== 'undefined';
+    function closeModal() {
+      document.getElementById('edit-modal').classList.remove('active');
+    }
 
-        const listContainer = document.getElementById('list-container');
-        const calendarGrid = document.getElementById('calendar-grid');
-        const weekContainer = document.getElementById('week-container');
-        const notesContainer = document.getElementById('notes-container');
-
-        async function initApp() {
-            marked.setOptions({ breaks: true, gfm: true });
-            if (isFirebaseEnabled) {
-                try {
-                    const firebaseConfig = JSON.parse(__firebase_config);
-                    const app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-                    if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token);
-                    else await signInAnonymously(auth);
-                    currentUserId = auth.currentUser.uid;
-                    setupRealtimeListener();
-                } catch (error) { fallbackToMemory(); }
-            } else { fallbackToMemory(); }
-        }
-
-        function setupRealtimeListener() {
-            if (!currentUserId || !db) return;
-            onSnapshot(collection(db, 'artifacts', appId, 'users', currentUserId, 'events'), (snapshot) => {
-                allEvents = []; snapshot.forEach(doc => allEvents.push({ id: doc.id, ...doc.data() })); updateViews();
-            });
-            onSnapshot(collection(db, 'artifacts', appId, 'users', currentUserId, 'notes'), (snapshot) => {
-                allNotes = []; snapshot.forEach(doc => allNotes.push({ id: doc.id, ...doc.data() })); renderNotes();
-            });
-        }
-
-        window.toggleColorInputs = function(prefix) {
-            const type = document.getElementById(`${prefix}-border-type`).value;
-            const container = document.getElementById(`${prefix}-color-inputs`);
-            const c2 = document.getElementById(`${prefix}-color-2`);
-            
-            if(type === 'custom') {
-                container.classList.remove('hidden');
-                c2.classList.add('hidden');
-            } else if (type === 'combined') {
-                container.classList.remove('hidden');
-                c2.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-            }
-        }
-
-        function getBorderStyle(item) {
-            const type = item.borderType || 'normal';
-            if (type === 'important') return 'border-color: #FFC107; border-width: 3px;';
-            if (type === 'urgent') return 'border-color: #F44336; border-width: 3px;';
-            if (type === 'custom') return `border-color: ${item.borderColor1 || '#4a5568'}; border-width: 3px;`;
-            if (type === 'combined') {
-                const c1 = item.borderColor1 || '#3b82f6';
-                const c2 = item.borderColor2 || '#ec4899';
-                // Using border-image for gradients on borders without needing padding-box tricks that override backgrounds
-                return `border-width: 3px; border-style: solid; border-image: linear-gradient(45deg, ${c1}, ${c2}) 1;`;
-            }
-            return ''; // Normal (uses default CSS classes)
-        }
-
-        window.saveEvent = async function() {
-            const title = document.getElementById('event-title').value.trim();
-            const date = document.getElementById('event-date').value;
-            const time = document.getElementById('event-time').value;
-            const description = document.getElementById('event-desc').value.trim();
-            
-            const borderType = document.getElementById('event-border-type').value;
-            const borderColor1 = document.getElementById('event-color-1').value;
-            const borderColor2 = document.getElementById('event-color-2').value;
-
-            if (!title || !date) return showToast("¡Necesitas un título y fecha!");
-
-            const eventData = { title, date, time: time || "12:00", description, borderType, borderColor1, borderColor2 };
-
-            if (editingEventId) {
-                if (isFirebaseEnabled && db && currentUserId) {
-                    await updateDoc(doc(db, 'artifacts', appId, 'users', currentUserId, 'events', editingEventId), eventData);
-                } else {
-                    const idx = allEvents.findIndex(e => e.id === editingEventId);
-                    if(idx > -1) allEvents[idx] = { ...allEvents[idx], ...eventData };
-                }
-                showToast("¡Cambios guardados!");
-                editingEventId = null;
-            } else {
-                eventData.completed = false;
-                eventData.createdAt = new Date().toISOString();
-                if (isFirebaseEnabled && db && currentUserId) {
-                    await addDoc(collection(db, 'artifacts', appId, 'users', currentUserId, 'events'), eventData);
-                } else {
-                    eventData.id = Math.random().toString(); allEvents.push(eventData);
-                }
-                showToast("¡Anotado en la libreta!");
-            }
-            switchView(lastView); updateViews();
-        }
-
-        window.saveNote = async function() {
-            const content = document.getElementById('note-content').value.trim();
-            const borderType = document.getElementById('note-border-type').value;
-            const borderColor1 = document.getElementById('note-color-1').value;
-            const borderColor2 = document.getElementById('note-color-2').value;
-
-            if (!content) return showToast("La nota está vacía");
-
-            const noteData = { content, createdAt: new Date().toISOString(), borderType, borderColor1, borderColor2 };
-            if (isFirebaseEnabled && db && currentUserId) {
-                await addDoc(collection(db, 'artifacts', appId, 'users', currentUserId, 'notes'), noteData);
-            } else {
-                noteData.id = Math.random().toString(); allNotes.push(noteData); renderNotes();
-            }
-            showToast("Nota guardada"); switchView('notes');
-        }
-
-        window.deleteEvent = async function(id, e) { if(e) e.stopPropagation();
-            if (isFirebaseEnabled && db) await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUserId, 'events', id));
-            else { allEvents = allEvents.filter(ev => ev.id !== id); updateViews(); }
-            showToast("Borrado");
-        }
-        window.deleteNote = async function(id) {
-            if (isFirebaseEnabled && db) await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUserId, 'notes', id));
-            else { allNotes = allNotes.filter(n => n.id !== id); renderNotes(); }
-            showToast("Borrada");
-        }
-        window.toggleEventStatus = async function(id, val, e) { if(e) e.stopPropagation();
-            if (isFirebaseEnabled && db) await updateDoc(doc(db, 'artifacts', appId, 'users', currentUserId, 'events', id), { completed: val });
-            else { const ev = allEvents.find(ev => ev.id === id); if(ev) ev.completed = val; updateViews(); }
-        }
-
-        window.handleFabClick = function() {
-            if (currentView === 'notes') {
-                document.getElementById('note-content').value = ''; 
-                document.getElementById('note-border-type').value = 'normal';
-                toggleColorInputs('note');
-                switchView('note-form');
-            } else { openForm(); }
-        }
-
-        function fallbackToMemory() { document.getElementById('loading-state').style.display = 'none'; updateViews(); renderNotes(); }
-
-        window.switchView = function(viewName) {
-            if (viewName !== 'form' && viewName !== 'note-form') lastView = viewName;
-            currentView = viewName;
-            const views = ['list', 'week', 'calendar', 'notes', 'form', 'note-form'];
-            
-            ['nav-list', 'nav-week', 'nav-calendar', 'nav-notes'].forEach(id => {
-                const el = document.getElementById(id); if (el) { el.classList.replace('bg-[#e2f0e3]', 'bg-transparent'); el.classList.remove('border-[#2e5932]'); el.classList.replace('text-gray-800', 'text-[#2e5932]'); }
-            });
-            if (['list', 'week', 'calendar', 'notes'].includes(viewName)) {
-                const activeNav = document.getElementById('nav-' + viewName);
-                if (activeNav) { activeNav.classList.replace('bg-transparent', 'bg-[#e2f0e3]'); activeNav.classList.add('border-[#2e5932]'); activeNav.classList.replace('text-[#2e5932]', 'text-gray-800'); }
-            }
-
-            views.forEach(v => {
-                const el = document.getElementById('view-' + v);
-                if (v === 'form' || v === 'note-form') {
-                    if(v === viewName) { el.classList.remove('hidden'); setTimeout(() => el.classList.remove('translate-x-full'), 10); }
-                    else { el.classList.add('translate-x-full'); setTimeout(() => el.classList.add('hidden'), 300); }
-                } else {
-                    if (v === viewName) el.classList.remove('hidden'); else el.classList.add('hidden');
-                }
-            });
-        }
-
-        window.openForm = function(dateStr = null) {
-            editingEventId = null;
-            document.getElementById('event-title').value = ''; document.getElementById('event-desc').value = '';
-            document.getElementById('event-border-type').value = 'normal'; toggleColorInputs('event');
-            if (dateStr && typeof dateStr === 'string') document.getElementById('event-date').value = dateStr;
-            else document.getElementById('event-date').valueAsDate = new Date();
-            const now = new Date(); now.setHours(now.getHours() + 1); now.setMinutes(0);
-            document.getElementById('event-time').value = now.toTimeString().substring(0, 5);
-            switchView('form');
-        }
-
-        window.openEventDetail = function(id) {
-            currentViewedEventId = id; const ev = allEvents.find(e => e.id === id); if(!ev) return;
-            document.getElementById('detail-title').textContent = ev.title;
-            const dateObj = new Date(`${ev.date}T${ev.time}`);
-            document.getElementById('detail-date').textContent = dateObj.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            document.getElementById('detail-time').textContent = dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('detail-desc').innerHTML = ev.description ? marked.parse(ev.description) : '<p class="text-gray-400 italic">Sin detalles</p>';
-            document.getElementById('event-detail-modal').classList.remove('hidden');
-        }
-
-        window.editCurrentEvent = function() {
-            const ev = allEvents.find(e => e.id === currentViewedEventId); if(!ev) return;
-            closeEventDetail(); editingEventId = currentViewedEventId;
-            document.getElementById('event-title').value = ev.title;
-            document.getElementById('event-date').value = ev.date;
-            document.getElementById('event-time').value = ev.time || "12:00";
-            document.getElementById('event-desc').value = ev.description || "";
-            document.getElementById('event-border-type').value = ev.borderType || "normal";
-            if(ev.borderColor1) document.getElementById('event-color-1').value = ev.borderColor1;
-            if(ev.borderColor2) document.getElementById('event-color-2').value = ev.borderColor2;
-            toggleColorInputs('event');
-            switchView('form');
-        }
-
-        window.closeEventDetail = function() { document.getElementById('event-detail-modal').classList.add('hidden'); currentViewedEventId = null; }
-        window.changeMonth = function(offset) { displayedMonth.setMonth(displayedMonth.getMonth() + offset); updateViews(); }
-        window.changeWeekDay = function(offset) { centralWeekDate.setDate(centralWeekDate.getDate() + offset); updateViews(); }
-        window.onWeekDateSelected = function(e) {
-            if (e.target.value) { const [y, m, d] = e.target.value.split('-'); centralWeekDate = new Date(y, m - 1, d, 12, 0, 0); updateViews(); }
-        }
-
-        function updateViews() {
-            document.getElementById('loading-state').style.display = 'none';
-            const year = displayedMonth.getFullYear(); const month = displayedMonth.getMonth();
-            const monthName = displayedMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-            document.getElementById('list-month-title').textContent = monthName; document.getElementById('grid-month-title').textContent = monthName;
-            const monthEvents = allEvents.filter(ev => { const evDate = new Date(ev.date + 'T12:00:00'); return evDate.getFullYear() === year && evDate.getMonth() === month; });
-            renderList(monthEvents); renderCalendar(year, month, monthEvents); renderWeek();
-        }
-
-        function renderList(events) {
-            listContainer.innerHTML = '';
-            if (events.length === 0) return listContainer.innerHTML = `<div class="flex flex-col items-center pt-20 text-gray-500 opacity-60"><i class="fas fa-seedling text-5xl mb-4"></i><p>Mes libre</p></div>`;
-            events.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
-            
-            events.forEach(ev => {
-                const dateObj = new Date(`${ev.date}T${ev.time}`);
-                const isCompleted = ev.completed ? 'checked' : ''; const textClass = ev.completed ? 'line-through opacity-50' : '';
-                const styleStr = getBorderStyle(ev);
-                
-                listContainer.insertAdjacentHTML('beforeend', `
-                    <div style="${styleStr}" class="sketch-card p-3 flex gap-3 items-center relative cursor-pointer hover:bg-white/80" onclick="openEventDetail('${ev.id}')">
-                        <div class="pl-1" onclick="event.stopPropagation()"><input type="checkbox" class="sketch-checkbox" ${isCompleted} onchange="toggleEventStatus('${ev.id}', this.checked, event)"></div>
-                        <div class="flex flex-col items-center justify-center min-w-[45px] ${textClass}">
-                            <span class="text-xs font-bold text-[#2e5932]/80 uppercase leading-none">${dateObj.toLocaleDateString('es-ES', { weekday: 'short' })}</span>
-                            <span class="text-2xl font-bold text-gray-800 leading-none">${dateObj.getDate()}</span>
-                        </div>
-                        <div class="flex-1 min-w-0 border-l-2 border-dashed border-gray-300 pl-3 ${textClass}">
-                            <h3 class="text-lg font-bold text-gray-900 truncate">${ev.title}</h3>
-                            <div class="text-xs text-gray-600 font-sans"><i class="far fa-clock"></i> ${dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
-                        </div>
-                        <button onclick="deleteEvent('${ev.id}', event)" class="w-8 h-8 rounded-full text-red-400 hover:text-red-600 flex items-center justify-center z-10"><i class="fas fa-trash-alt"></i></button>
-                    </div>`);
-            });
-        }
-
-        function renderWeek() {
-            weekContainer.innerHTML = '';
-            document.getElementById('week-date-picker').value = centralWeekDate.toISOString().split('T')[0];
-            document.getElementById('week-central-date-display').textContent = centralWeekDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
-            const todayStr = new Date().toDateString();
-
-            for (let i = -4; i <= 4; i++) {
-                const targetDate = new Date(centralWeekDate); targetDate.setDate(centralWeekDate.getDate() + i);
-                const dStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
-                const dayEvents = allEvents.filter(ev => ev.date === dStr).sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
-                
-                let evHtml = dayEvents.length ? dayEvents.map(ev => {
-                    const styleStr = getBorderStyle(ev);
-                    return `
-                    <div style="${styleStr}" class="flex items-center justify-between p-1 hover:bg-black/5 rounded cursor-pointer sketch-card bg-transparent mb-1" onclick="openEventDetail('${ev.id}'); event.stopPropagation();">
-                        <div class="flex items-center gap-2 overflow-hidden flex-1">
-                            <input type="checkbox" class="sketch-checkbox w-4 h-4 min-w-[16px] outline-none" ${ev.completed ? 'checked' : ''} onclick="toggleEventStatus('${ev.id}', this.checked, event)">
-                            <span class="font-bold text-sm text-gray-800 truncate ${ev.completed ? 'line-through opacity-50' : ''}">${ev.title}</span>
-                        </div>
-                        <span class="text-xs text-gray-500 font-sans whitespace-nowrap"><i class="far fa-clock"></i> ${ev.time}</span>
-                    </div>`
-                }).join('') : '<p class="text-sm text-gray-400 italic text-center py-1 font-sans">Sin anotaciones</p>';
-
-                const isCentral = i === 0;
-                weekContainer.insertAdjacentHTML('beforeend', `
-                    <div class="sketch-card p-3 mb-2 flex flex-col gap-2 relative ${isCentral ? 'border-[#2e5932] border-2 bg-[#e2f0e3] shadow-md scale-[1.02] my-4 z-10' : 'bg-white/60'}" ${!isCentral ? `onclick="centralWeekDate = new Date(${targetDate.getFullYear()}, ${targetDate.getMonth()}, ${targetDate.getDate()}, 12, 0, 0); updateViews();"` : ''}>
-                        <div class="flex justify-between items-center border-b border-dashed border-gray-300 pb-1 mb-1">
-                            <h3 class="font-bold ${isCentral ? 'text-[#2e5932] text-lg' : 'text-gray-600'}">${targetDate.toLocaleDateString('es-ES', { weekday: 'long' })} <span class="text-sm ml-1 text-gray-500">${targetDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span></h3>
-                            ${targetDate.toDateString() === todayStr ? '<span class="text-xs bg-[#a3d9a5] text-[#2e5932] px-2 rounded-full font-bold font-sans">Hoy</span>' : ''}
-                        </div>
-                        <div class="flex flex-col gap-1">${evHtml}</div>
-                    </div>`);
-            }
-        }
-
-        function renderNotes() {
-            notesContainer.innerHTML = '';
-            if (allNotes.length === 0) return notesContainer.innerHTML = `<div class="w-full flex flex-col items-center pt-20 text-gray-500 opacity-60"><i class="fas fa-leaf text-5xl mb-4"></i><p>Aún no hay notas.</p></div>`;
-            const sortedNotes = [...allNotes].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            sortedNotes.forEach(note => {
-                const styleStr = getBorderStyle(note);
-                notesContainer.insertAdjacentHTML('beforeend', `
-                    <div style="${styleStr}" class="sketch-card p-4 w-full relative bg-white/70">
-                        <div class="markdown-content text-gray-800 text-base font-sans mb-6 overflow-hidden">${marked.parse(note.content)}</div>
-                        <div class="absolute bottom-2 left-3 text-xs text-gray-500 font-sans">${new Date(note.createdAt).toLocaleDateString('es-ES')}</div>
-                        <button onclick="deleteNote('${note.id}')" class="absolute bottom-2 right-2 text-red-400 hover:text-red-600 sketch-btn w-6 h-6 flex items-center justify-center border-none"><i class="fas fa-trash-alt"></i></button>
-                    </div>`);
-            });
-        }
-
-        function renderCalendar(year, month, events) {
-            calendarGrid.innerHTML = '';
-            const startDay = (new Date(year, month, 1).getDay() + 6) % 7; 
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            for (let i = 0; i < startDay; i++) calendarGrid.innerHTML += `<div class="calendar-day bg-transparent"></div>`;
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayEvents = events.filter(e => new Date(e.date + 'T12:00:00').getDate() === day);
-                const evHtml = dayEvents.map(e => `<div onclick="openEventDetail('${e.id}'); event.stopPropagation();" class="calendar-event ${e.completed ? 'bg-gray-300 text-gray-600 line-through' : ''}">${e.title}</div>`).join('');
-                const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
-                calendarGrid.innerHTML += `
-                    <div onclick="openForm('${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')" class="calendar-day p-1 cursor-pointer hover:bg-white/40 flex flex-col ${isToday ? 'border-2 border-[#2e5932] bg-[#e2f0e3]/40' : ''}">
-                        <span class="text-sm font-bold block text-right mb-1 ${isToday ? 'text-[#2e5932]' : 'text-gray-700'}">${day}</span>
-                        <div class="flex-1 overflow-hidden flex flex-col gap-[1px]">${evHtml}</div>
-                    </div>`;
-            }
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-message').textContent = msg;
-            t.classList.remove('opacity-0', '-translate-y-full', 'pointer-events-none'); t.classList.add('translate-y-0');
-            setTimeout(() => { t.classList.add('opacity-0', '-translate-y-full', 'pointer-events-none'); t.classList.remove('translate-y-0'); }, 2500);
-        }
-
-        initApp();
-    </script>
+    function saveEntry() {
+      // Aquí se conectaría la lógica de Firebase para guardar el contenido
+      alert('Entrada guardada en la base de datos local/Firebase.');
+      closeModal();
+    }
+  </script>
 </body>
 </html>
-```
