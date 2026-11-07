@@ -67,46 +67,20 @@
             line-height: 32px; 
         }
 
-        .sketch-btn {
-            border: 2px solid #2d3748;
-            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
-            background-color: transparent;
-            transition: all 0.2s;
-        }
-        .sketch-btn:hover {
-            background-color: #e2f0e3;
-            transform: scale(1.05) rotate(-1deg);
-        }
-
-        .sketch-fab {
-            border: 3px solid #2d3748;
-            border-radius: 50% 40% 50% 40% / 40% 50% 40% 50%;
-            background-color: #eab308;
-        }
-
-        .sketch-card {
-            border: 2px solid #4a5568;
-            border-radius: 8px 25px 8px 25px / 25px 8px 25px 8px;
-            background-color: var(--bg-cream);
-        }
-
-        /* Específico para sobrescribir y hacer transparente en la lista */
-        .sketch-card.bg-transparent {
-            background-color: transparent !important;
-        }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         .calendar-day {
-            border: 1px solid rgba(74, 85, 104, 0.2);
+            border-right: 1px solid rgba(160, 174, 192, 0.4);
+            border-bottom: 1px solid rgba(160, 174, 192, 0.4);
         }
+        
         .calendar-event {
             font-size: 9px;
             line-height: 1.1;
-            background-color: rgba(46, 89, 50, 0.2);
+            background-color: rgba(163, 217, 165, 0.5);
             border-radius: 3px;
-            padding: 1px 2px;
+            padding: 1px 3px;
             margin-bottom: 1px;
             letter-spacing: -0.1px;
             white-space: nowrap;
@@ -128,8 +102,8 @@
 
         .sketch-checkbox {
             appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border: 2px solid #4a5568;
             border-radius: 4px;
             background-color: transparent;
@@ -140,13 +114,13 @@
             transition: all 0.2s;
         }
         .sketch-checkbox:checked {
-            background-color: var(--bg-cream);
+            background-color: transparent;
         }
         .sketch-checkbox:checked::after {
             content: '✔';
             position: absolute;
-            top: -5px;
-            left: 2px;
+            top: -6px;
+            left: 1px;
             font-size: 18px;
             color: var(--accent-green);
             font-family: sans-serif;
@@ -177,66 +151,66 @@
 
         <!-- VISTA 1: LISTA (MES) -->
         <div id="view-list" class="flex-1 flex flex-col h-full w-full absolute inset-0 transition-opacity duration-300">
-            <header class="pt-10 pb-4 px-4 flex justify-between items-center z-10 sticky top-0 bg-[#fff9e6]/90 backdrop-blur-sm border-b-2 border-dashed border-[#2e5932]">
-                <button onclick="changeMonth(-1)" class="sketch-btn w-8 h-8 flex items-center justify-center text-[#2e5932]"><i class="fas fa-chevron-left"></i></button>
+            <header class="pt-10 pb-4 px-4 flex justify-between items-center z-10 sticky top-0 bg-transparent border-b-2 border-dashed border-[#2e5932]">
+                <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center text-[#333] border-2 border-[#333] rounded bg-transparent"><i class="fas fa-chevron-left"></i></button>
                 <h1 id="list-month-title" class="text-2xl font-bold text-[#2e5932] capitalize tracking-wide"></h1>
-                <button onclick="changeMonth(1)" class="sketch-btn w-8 h-8 flex items-center justify-center text-[#2e5932]"><i class="fas fa-chevron-right"></i></button>
+                <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center text-[#333] border-2 border-[#333] rounded bg-transparent"><i class="fas fa-chevron-right"></i></button>
             </header>
             <main id="list-container" class="flex-1 overflow-y-auto no-scrollbar p-4 pb-24 space-y-4"></main>
         </div>
 
         <!-- VISTA 1.5: SEMANA -->
         <div id="view-week" class="hidden flex-1 flex flex-col h-full w-full absolute inset-0 transition-opacity duration-300">
-            <header class="pt-10 pb-4 px-4 flex justify-between items-center z-10 sticky top-0 bg-[#fff9e6]/90 backdrop-blur-sm border-b-2 border-dashed border-[#2e5932]">
+            <header class="pt-10 pb-4 px-4 flex justify-between items-center z-10 sticky top-0 bg-transparent border-b-2 border-dashed border-[#2e5932]">
                 <h1 class="text-xl font-bold text-[#2e5932] relative w-full text-center cursor-pointer group">
                     <input type="date" id="week-date-picker" onchange="onWeekDateSelected(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" />
                     Semana: <span id="week-central-date-display" class="underline decoration-dashed decoration-[#2e5932] group-hover:text-[#1a3820] transition-colors">...</span> <i class="fas fa-caret-down text-sm"></i>
                 </h1>
             </header>
-            <button onclick="changeWeekDay(-1)" class="w-full text-center py-2 bg-[#e2f0e3] text-[#2e5932] font-bold border-b-2 border-dashed border-[#2e5932] z-10 hover:bg-[#c9e4ca] transition-colors">
+            <button onclick="changeWeekDay(-1)" class="w-full text-center py-2 bg-transparent text-[#2e5932] font-bold border-b-2 border-dashed border-[#a0aec0] z-10 hover:bg-black/5 transition-colors">
                 <i class="fas fa-chevron-up mr-2"></i> Día Anterior
             </button>
             <main id="week-container" class="flex-1 overflow-y-auto no-scrollbar p-3 space-y-4 pb-4"></main>
-            <button onclick="changeWeekDay(1)" class="w-full text-center py-2 bg-[#e2f0e3] text-[#2e5932] font-bold border-t-2 border-dashed border-[#2e5932] z-10 hover:bg-[#c9e4ca] transition-colors mb-[56px]">
+            <button onclick="changeWeekDay(1)" class="w-full text-center py-2 bg-transparent text-[#2e5932] font-bold border-t-2 border-dashed border-[#a0aec0] z-10 hover:bg-black/5 transition-colors mb-[56px]">
                 <i class="fas fa-chevron-down mr-2"></i> Día Siguiente
             </button>
         </div>
 
         <!-- VISTA 2: CALENDARIO -->
         <div id="view-calendar" class="hidden flex-1 flex flex-col h-full w-full absolute inset-0 transition-opacity duration-300">
-            <header class="pt-10 pb-2 px-2 flex justify-between items-center z-10 sticky top-0 bg-[#fff9e6]/90 backdrop-blur-sm border-b-2 border-dashed border-[#2e5932]">
-                <button onclick="changeMonth(-1)" class="sketch-btn w-8 h-8 flex items-center justify-center text-[#2e5932]"><i class="fas fa-chevron-left"></i></button>
-                <h1 id="grid-month-title" class="text-xl font-bold text-[#2e5932] capitalize"></h1>
-                <button onclick="changeMonth(1)" class="sketch-btn w-8 h-8 flex items-center justify-center text-[#2e5932]"><i class="fas fa-chevron-right"></i></button>
+            <header class="pt-10 pb-2 px-4 flex justify-between items-center z-10 sticky top-0 bg-transparent border-b-2 border-dashed border-[#2e5932]">
+                <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center text-[#333] border-2 border-[#333] rounded bg-transparent"><i class="fas fa-chevron-left"></i></button>
+                <h1 id="grid-month-title" class="text-2xl font-bold text-[#2e5932] capitalize tracking-wide"></h1>
+                <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center text-[#333] border-2 border-[#333] rounded bg-transparent"><i class="fas fa-chevron-right"></i></button>
             </header>
             <main class="flex-1 flex flex-col overflow-hidden p-2 pb-20">
-                <div class="grid grid-cols-7 gap-1 mb-1 text-center font-bold text-[#2e5932] text-sm shrink-0">
+                <div class="grid grid-cols-7 gap-1 mb-1 text-center font-bold text-[#2e5932] text-sm shrink-0 border-b border-dashed border-[#a0aec0] pb-1">
                     <div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div><div>D</div>
                 </div>
-                <div id="calendar-grid" class="grid grid-cols-7 gap-1 flex-1 min-h-0 auto-rows-fr"></div>
+                <div id="calendar-grid" class="grid grid-cols-7 gap-0 flex-1 min-h-0 auto-rows-fr border-t border-l border-gray-300/40"></div>
             </main>
         </div>
 
         <!-- VISTA 3: DIARIO / AGREGAR EVENTO -->
-        <div id="view-form" class="hidden flex-1 flex flex-col h-full w-full absolute inset-0 bg-[#fff9e6] z-30 transition-transform transform translate-x-full duration-300 notebook-bg">
-            <header class="pt-8 pb-2 px-4 flex justify-between items-center sticky top-0 bg-[#fff9e6]/80 backdrop-blur-md">
-                <button onclick="switchView(lastView)" class="sketch-btn px-3 py-1 flex items-center gap-2 text-gray-700 font-bold"><i class="fas fa-arrow-left"></i> Volver</button>
-                <button onclick="saveEvent()" class="sketch-btn px-4 py-1 text-[#2e5932] font-bold border-[#2e5932] hover:bg-green-50"><i class="fas fa-save"></i> Guardar</button>
+        <div id="view-form" class="hidden flex-1 flex flex-col h-full w-full absolute inset-0 z-30 transition-transform transform translate-x-full duration-300 notebook-bg">
+            <header class="pt-8 pb-2 px-4 flex justify-between items-center sticky top-0 bg-transparent border-b-2 border-dashed border-[#2e5932]">
+                <button onclick="switchView(lastView)" class="px-3 py-1 flex items-center gap-2 text-[#333] border-2 border-[#333] rounded font-bold hover:bg-black/5"><i class="fas fa-arrow-left"></i> Volver</button>
+                <button onclick="saveEvent()" class="px-4 py-1 text-[#2e5932] font-bold border-2 border-[#2e5932] rounded hover:bg-[#e2f0e3]"><i class="fas fa-save"></i> Guardar</button>
             </header>
             <main class="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col">
                 <div class="mb-2">
-                    <input type="text" id="event-title" placeholder="Título del evento..." class="w-full bg-transparent text-2xl font-bold text-[#2e5932] placeholder-gray-400 border-b-2 border-gray-400 border-dashed pb-1">
+                    <input type="text" id="event-title" placeholder="Título del evento..." class="w-full bg-transparent text-2xl font-bold text-[#2e5932] placeholder-gray-400 border-b border-gray-400 border-dashed pb-1">
                 </div>
                 <div class="flex gap-4 mb-2 mt-2">
-                    <input type="date" id="event-date" class="bg-transparent border-b-2 border-gray-400 border-dashed text-gray-700 font-bold focus:outline-none flex-1">
-                    <input type="time" id="event-time" class="bg-transparent border-b-2 border-gray-400 border-dashed text-gray-700 font-bold focus:outline-none flex-1">
+                    <input type="date" id="event-date" class="bg-transparent border-b border-gray-400 border-dashed text-gray-700 font-bold focus:outline-none flex-1">
+                    <input type="time" id="event-time" class="bg-transparent border-b border-gray-400 border-dashed text-gray-700 font-bold focus:outline-none flex-1">
                 </div>
                 <!-- Selección de Borde -->
-                <div class="flex flex-col gap-2 mb-2 mt-2 border-b-2 border-gray-400 border-dashed pb-2">
+                <div class="flex flex-col gap-2 mb-2 mt-2 border-b border-gray-400 border-dashed pb-2">
                     <div class="flex items-center gap-2">
                         <label class="text-sm font-bold text-gray-700">Estilo:</label>
-                        <select id="event-border-type" onchange="toggleColorInputs('event')" class="bg-transparent border border-gray-400 rounded text-sm text-gray-700 font-bold px-1">
-                            <option value="normal">Normal</option>
+                        <select id="event-border-type" onchange="toggleColorInputs('event')" class="bg-transparent border border-gray-400 rounded text-sm text-gray-700 font-bold px-1 py-1">
+                            <option value="normal">Normal (Gris)</option>
                             <option value="important">Importante (Amarillo)</option>
                             <option value="urgent">Urgente (Rojo)</option>
                             <option value="custom">Personalizado (1 Color)</option>
@@ -256,24 +230,24 @@
 
         <!-- VISTA 4: NOTAS -->
         <div id="view-notes" class="hidden flex-1 flex flex-col h-full w-full absolute inset-0 transition-opacity duration-300">
-            <header class="pt-10 pb-4 px-4 flex justify-between items-center z-10 sticky top-0 bg-[#fff9e6]/90 backdrop-blur-sm border-b-2 border-dashed border-[#2e5932]">
+            <header class="pt-10 pb-4 px-4 flex justify-between items-center z-10 sticky top-0 bg-transparent border-b-2 border-dashed border-[#2e5932]">
                 <h1 class="text-2xl font-bold text-[#2e5932] tracking-wide">Mis Notas</h1>
             </header>
             <main id="notes-container" class="flex-1 overflow-y-auto no-scrollbar p-4 pb-24 space-y-4 flex flex-wrap content-start gap-4"></main>
         </div>
 
         <!-- VISTA 5: AGREGAR NOTA -->
-        <div id="view-note-form" class="hidden flex-1 flex flex-col h-full w-full absolute inset-0 bg-[#fff9e6] z-30 transition-transform transform translate-x-full duration-300 notebook-bg">
-            <header class="pt-8 pb-2 px-4 flex justify-between items-center sticky top-0 bg-[#fff9e6]/80 backdrop-blur-md">
-                <button onclick="switchView('notes')" class="sketch-btn px-3 py-1 flex items-center gap-2 text-gray-700 font-bold"><i class="fas fa-arrow-left"></i> Volver</button>
-                <button onclick="saveNote()" class="sketch-btn px-4 py-1 text-[#2e5932] font-bold border-[#2e5932] hover:bg-green-50"><i class="fas fa-save"></i> Guardar</button>
+        <div id="view-note-form" class="hidden flex-1 flex flex-col h-full w-full absolute inset-0 z-30 transition-transform transform translate-x-full duration-300 notebook-bg">
+            <header class="pt-8 pb-2 px-4 flex justify-between items-center sticky top-0 bg-transparent border-b-2 border-dashed border-[#2e5932]">
+                <button onclick="switchView('notes')" class="px-3 py-1 flex items-center gap-2 text-[#333] border-2 border-[#333] rounded font-bold hover:bg-black/5"><i class="fas fa-arrow-left"></i> Volver</button>
+                <button onclick="saveNote()" class="px-4 py-1 text-[#2e5932] font-bold border-2 border-[#2e5932] rounded hover:bg-[#e2f0e3]"><i class="fas fa-save"></i> Guardar</button>
             </header>
             <main class="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col">
                  <!-- Selección de Borde para Nota -->
-                 <div class="flex flex-col gap-2 mb-2 mt-2 border-b-2 border-gray-400 border-dashed pb-2">
+                 <div class="flex flex-col gap-2 mb-2 mt-2 border-b border-gray-400 border-dashed pb-2">
                     <div class="flex items-center gap-2">
                         <label class="text-sm font-bold text-gray-700">Estilo de Borde:</label>
-                        <select id="note-border-type" onchange="toggleColorInputs('note')" class="bg-transparent border border-gray-400 rounded text-sm text-gray-700 font-bold px-1">
+                        <select id="note-border-type" onchange="toggleColorInputs('note')" class="bg-transparent border border-gray-400 rounded text-sm text-gray-700 font-bold px-1 py-1">
                             <option value="normal">Normal</option>
                             <option value="important">Importante (Amarillo)</option>
                             <option value="urgent">Urgente (Rojo)</option>
@@ -294,9 +268,9 @@
 
         <!-- MODAL DETALLE EVENTO -->
         <div id="event-detail-modal" class="hidden absolute inset-0 bg-black/50 z-[40] flex items-center justify-center p-4">
-            <div class="sketch-card w-full max-w-sm bg-[#fff9e6] p-6 relative notebook-bg shadow-2xl">
-                <button onclick="editCurrentEvent()" class="absolute top-2 right-12 text-[#2e5932] hover:text-green-800 w-8 h-8 flex items-center justify-center sketch-btn"><i class="fas fa-edit"></i></button>
-                <button onclick="closeEventDetail()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 w-8 h-8 flex items-center justify-center sketch-btn"><i class="fas fa-times"></i></button>
+            <div class="w-full max-w-sm bg-[#fff9e6] p-6 relative notebook-bg shadow-2xl border-2 border-[#555] rounded-xl">
+                <button onclick="editCurrentEvent()" class="absolute top-2 right-12 text-[#2e5932] border-2 border-[#333] rounded w-8 h-8 flex items-center justify-center hover:bg-[#e2f0e3]"><i class="fas fa-edit"></i></button>
+                <button onclick="closeEventDetail()" class="absolute top-2 right-2 text-gray-600 border-2 border-[#333] rounded w-8 h-8 flex items-center justify-center hover:bg-black/5"><i class="fas fa-times"></i></button>
                 <h2 id="detail-title" class="text-2xl font-bold text-[#2e5932] mb-2 pr-20"></h2>
                 <div class="text-sm text-gray-600 mb-4 border-b-2 border-dashed border-[#2e5932] pb-2 flex gap-4">
                     <span><i class="far fa-calendar-alt"></i> <span id="detail-date"></span></span>
@@ -310,14 +284,14 @@
             <i class="fas fa-pencil-alt fa-spin text-4xl mb-3 text-[#2e5932]"></i><p class="font-bold text-xl">Trazando...</p>
         </div>
 
-        <button id="fab-add" onclick="handleFabClick()" class="absolute bottom-20 right-6 w-14 h-14 sketch-fab text-[#2e5932] shadow-lg flex items-center justify-center text-2xl z-20 hover:scale-110 transition-transform"><i class="fas fa-pen"></i></button>
+        <button id="fab-add" onclick="handleFabClick()" class="absolute bottom-[80px] right-6 w-14 h-14 bg-[#facc15] border-[3px] border-[#333] rounded-full text-[#333] shadow-lg flex items-center justify-center text-xl z-20 hover:scale-105 transition-transform"><i class="fas fa-pen"></i></button>
 
-        <!-- Navegación -->
-        <nav class="bg-[#fff9e6] border-t-4 border-[#2e5932] border-dashed p-2 flex justify-between gap-1 items-center z-10 absolute bottom-0 w-full box-border">
-            <button onclick="switchView('list')" id="nav-list" class="flex-1 sketch-btn py-2 text-xs sm:text-sm font-bold text-gray-800 bg-[#e2f0e3] truncate px-1 border-[#2e5932]"><i class="fas fa-list-ul block mb-1"></i> Lista</button>
-            <button onclick="switchView('week')" id="nav-week" class="flex-1 sketch-btn py-2 text-xs sm:text-sm font-bold text-[#2e5932] hover:bg-[#e2f0e3] truncate px-1"><i class="fas fa-calendar-week block mb-1"></i> Sem</button>
-            <button onclick="switchView('calendar')" id="nav-calendar" class="flex-1 sketch-btn py-2 text-xs sm:text-sm font-bold text-[#2e5932] hover:bg-[#e2f0e3] truncate px-1"><i class="far fa-calendar-alt block mb-1"></i> Mes</button>
-            <button onclick="switchView('notes')" id="nav-notes" class="flex-1 sketch-btn py-2 text-xs sm:text-sm font-bold text-[#2e5932] hover:bg-[#e2f0e3] truncate px-1"><i class="fas fa-sticky-note block mb-1"></i> Notas</button>
+        <!-- Navegación Inferior -->
+        <nav class="bg-transparent border-t-[3px] border-dashed border-[#2e5932] p-[10px] flex justify-between gap-[6px] items-center z-10 absolute bottom-0 w-full box-border">
+            <button onclick="switchView('list')" id="nav-list" class="flex-1 py-[6px] text-xs sm:text-sm font-bold text-gray-600 bg-white border-[2px] border-gray-300 rounded-lg truncate px-1"><i class="fas fa-list-ul hidden mb-1"></i> Lista</button>
+            <button onclick="switchView('week')" id="nav-week" class="flex-1 py-[6px] text-xs sm:text-sm font-bold text-gray-600 bg-white border-[2px] border-gray-300 rounded-lg truncate px-1"><i class="fas fa-calendar-week hidden mb-1"></i> Semana</button>
+            <button onclick="switchView('calendar')" id="nav-calendar" class="flex-1 py-[6px] text-xs sm:text-sm font-bold text-gray-600 bg-white border-[2px] border-gray-300 rounded-lg truncate px-1"><i class="far fa-calendar-alt hidden mb-1"></i> Mes</button>
+            <button onclick="switchView('notes')" id="nav-notes" class="flex-1 py-[6px] text-xs sm:text-sm font-bold text-gray-600 bg-white border-[2px] border-gray-300 rounded-lg truncate px-1"><i class="fas fa-sticky-note hidden mb-1"></i> Notas</button>
         </nav>
 
         <div id="toast" class="absolute top-12 left-4 right-4 bg-[#2e5932] text-white px-4 py-2 rounded shadow-lg transition-all duration-300 opacity-0 -translate-y-full pointer-events-none z-[60] flex items-center space-x-2 text-sm text-center justify-center"><span id="toast-message"></span></div>
@@ -365,6 +339,7 @@
             document.getElementById('loading-state').style.display = 'none';
             updateViews();
             renderNotes();
+            switchView('list'); // Iniciar en pestaña lista
         }
 
         function saveToLocalStorage() {
@@ -390,7 +365,6 @@
 
         function getBorderStyle(item) {
             const type = item.borderType || 'normal';
-            // Ajuste del color amarillo para igualar el de la imagen de muestra y mantener el border-radius intacto
             if (type === 'important') return 'border-color: #facc15; border-width: 2px;';
             if (type === 'urgent') return 'border-color: #ef4444; border-width: 2px;';
             if (type === 'custom') return `border-color: ${item.borderColor1 || '#4a5568'}; border-width: 2px;`;
@@ -399,7 +373,7 @@
                 const c2 = item.borderColor2 || '#ec4899';
                 return `border-width: 2px; border-style: solid; border-image: linear-gradient(45deg, ${c1}, ${c2}) 1;`;
             }
-            return ''; 
+            return 'border-color: #555; border-width: 2px;'; 
         }
 
         window.saveEvent = function() {
@@ -496,12 +470,24 @@
             currentView = viewName;
             const views = ['list', 'week', 'calendar', 'notes', 'form', 'note-form'];
             
+            // Lógica botones de navegación inferior
             ['nav-list', 'nav-week', 'nav-calendar', 'nav-notes'].forEach(id => {
-                const el = document.getElementById(id); if (el) { el.classList.replace('bg-[#e2f0e3]', 'bg-transparent'); el.classList.remove('border-[#2e5932]'); el.classList.replace('text-gray-800', 'text-[#2e5932]'); }
+                const el = document.getElementById(id); 
+                if (el) { 
+                    el.classList.replace('bg-[#e2f0e3]', 'bg-white'); 
+                    el.classList.remove('border-[#2e5932]'); 
+                    el.classList.add('border-gray-300');
+                    el.classList.replace('text-[#2e5932]', 'text-gray-600'); 
+                }
             });
             if (['list', 'week', 'calendar', 'notes'].includes(viewName)) {
                 const activeNav = document.getElementById('nav-' + viewName);
-                if (activeNav) { activeNav.classList.replace('bg-transparent', 'bg-[#e2f0e3]'); activeNav.classList.add('border-[#2e5932]'); activeNav.classList.replace('text-[#2e5932]', 'text-gray-800'); }
+                if (activeNav) { 
+                    activeNav.classList.replace('bg-white', 'bg-[#e2f0e3]'); 
+                    activeNav.classList.remove('border-gray-300'); 
+                    activeNav.classList.add('border-[#2e5932]'); 
+                    activeNav.classList.replace('text-gray-600', 'text-[#2e5932]'); 
+                }
             }
 
             views.forEach(v => {
@@ -568,7 +554,7 @@
 
         function renderList(events) {
             listContainer.innerHTML = '';
-            if (events.length === 0) return listContainer.innerHTML = `<div class="flex flex-col items-center pt-20 text-gray-500 opacity-60"><i class="fas fa-seedling text-5xl mb-4"></i><p>Mes libre</p></div>`;
+            if (events.length === 0) return listContainer.innerHTML = `<div class="flex flex-col items-center pt-24 text-gray-400 opacity-80"><i class="fas fa-seedling text-5xl mb-4"></i><p class="italic font-sans text-sm">Mes libre</p></div>`;
             events.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
             
             events.forEach(ev => {
@@ -576,19 +562,18 @@
                 const isCompleted = ev.completed ? 'checked' : ''; const textClass = ev.completed ? 'line-through opacity-50' : '';
                 const styleStr = getBorderStyle(ev);
                 
-                // bg-transparent añadido para que las líneas crucen el recuadro igual que en la imagen
                 listContainer.insertAdjacentHTML('beforeend', `
-                    <div style="${styleStr}" class="sketch-card bg-transparent p-3 flex gap-3 items-center relative cursor-pointer hover:bg-black/5" onclick="openEventDetail('${ev.id}')">
+                    <div style="${styleStr}" class="bg-transparent rounded-xl p-[10px] mb-[15px] flex gap-2 items-center relative cursor-pointer hover:bg-black/5" onclick="openEventDetail('${ev.id}')">
                         <div class="pl-1" onclick="event.stopPropagation()"><input type="checkbox" class="sketch-checkbox" ${isCompleted} onchange="toggleEventStatus('${ev.id}', this.checked, event)"></div>
-                        <div class="flex flex-col items-center justify-center min-w-[45px] ${textClass}">
-                            <span class="text-xs font-bold text-[#2e5932] uppercase leading-none mb-1">${dateObj.toLocaleDateString('es-ES', { weekday: 'short' })}</span>
-                            <span class="text-2xl font-bold text-gray-800 leading-none">${dateObj.getDate()}</span>
+                        <div class="flex flex-col items-center justify-center min-w-[40px] ${textClass}">
+                            <span class="text-[10px] font-bold text-[#2e5932] uppercase leading-none mb-[2px]">${dateObj.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.','')}</span>
+                            <span class="text-2xl font-bold text-gray-900 leading-none">${dateObj.getDate()}</span>
                         </div>
                         <div class="flex-1 min-w-0 border-l border-dashed border-[#a0aec0] pl-3 py-1 ${textClass}">
                             <h3 class="text-lg font-bold text-gray-900 truncate leading-tight">${ev.title}</h3>
-                            <div class="text-[11px] text-gray-500 font-sans mt-1"><i class="far fa-clock"></i> ${dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div class="text-[11px] text-gray-600 font-sans mt-1"><i class="far fa-clock"></i> ${ev.time}</div>
                         </div>
-                        <button onclick="deleteEvent('${ev.id}', event)" class="w-8 h-8 rounded-full text-red-400 hover:text-red-600 flex items-center justify-center z-10"><i class="fas fa-trash-alt"></i></button>
+                        <button onclick="deleteEvent('${ev.id}', event)" class="w-8 h-8 rounded text-red-400/80 hover:text-red-500 flex items-center justify-center z-10"><i class="fas fa-trash-alt"></i></button>
                     </div>`);
             });
         }
@@ -607,38 +592,38 @@
                 let evHtml = dayEvents.length ? dayEvents.map(ev => {
                     const styleStr = getBorderStyle(ev);
                     return `
-                    <div style="${styleStr}" class="flex items-center justify-between p-1 hover:bg-black/5 rounded cursor-pointer sketch-card bg-transparent mb-1" onclick="openEventDetail('${ev.id}'); event.stopPropagation();">
+                    <div style="${styleStr}" class="flex items-center justify-between p-2 rounded cursor-pointer bg-transparent mb-[6px]" onclick="openEventDetail('${ev.id}'); event.stopPropagation();">
                         <div class="flex items-center gap-2 overflow-hidden flex-1">
                             <input type="checkbox" class="sketch-checkbox w-4 h-4 min-w-[16px] outline-none" ${ev.completed ? 'checked' : ''} onclick="toggleEventStatus('${ev.id}', this.checked, event)">
-                            <span class="font-bold text-sm text-gray-800 truncate ${ev.completed ? 'line-through opacity-50' : ''}">${ev.title}</span>
+                            <span class="font-bold text-[15px] text-gray-900 truncate ${ev.completed ? 'line-through opacity-50' : ''}">${ev.title}</span>
                         </div>
-                        <span class="text-xs text-gray-500 font-sans whitespace-nowrap"><i class="far fa-clock"></i> ${ev.time}</span>
+                        <span class="text-[11px] text-gray-600 font-sans whitespace-nowrap"><i class="far fa-clock"></i> ${ev.time}</span>
                     </div>`
-                }).join('') : '<p class="text-sm text-gray-400 italic text-center py-1 font-sans">Sin anotaciones</p>';
+                }).join('') : '<p class="text-sm text-gray-400/80 italic text-center py-1 font-sans">Sin anotaciones</p>';
 
                 const isCentral = i === 0;
                 weekContainer.insertAdjacentHTML('beforeend', `
-                    <div class="sketch-card p-3 mb-2 flex flex-col gap-2 relative ${isCentral ? 'border-[#2e5932] border-2 bg-[#e2f0e3] shadow-md scale-[1.02] my-4 z-10' : 'bg-transparent'}" ${!isCentral ? `onclick="centralWeekDate = new Date(${targetDate.getFullYear()}, ${targetDate.getMonth()}, ${targetDate.getDate()}, 12, 0, 0); updateViews();"` : ''}>
-                        <div class="flex justify-between items-center border-b border-dashed border-gray-300 pb-1 mb-1">
-                            <h3 class="font-bold ${isCentral ? 'text-[#2e5932] text-lg' : 'text-gray-600'}">${targetDate.toLocaleDateString('es-ES', { weekday: 'long' })} <span class="text-sm ml-1 text-gray-500">${targetDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span></h3>
-                            ${targetDate.toDateString() === todayStr ? '<span class="text-xs bg-[#a3d9a5] text-[#2e5932] px-2 rounded-full font-bold font-sans">Hoy</span>' : ''}
+                    <div class="rounded-xl p-3 mb-[15px] flex flex-col gap-1 relative ${isCentral ? 'border-[#2e5932] border-[2px] bg-[#e2f0e3] shadow-sm' : 'border-[#555] border-[2px] bg-transparent'}" ${!isCentral ? `onclick="centralWeekDate = new Date(${targetDate.getFullYear()}, ${targetDate.getMonth()}, ${targetDate.getDate()}, 12, 0, 0); updateViews();"` : ''}>
+                        <div class="flex justify-between items-baseline border-b border-dashed border-[#a0aec0] pb-1 mb-2">
+                            <h3 class="font-bold ${isCentral ? 'text-[#2e5932] text-lg' : 'text-gray-800 text-lg'}">${targetDate.toLocaleDateString('es-ES', { weekday: 'long' })} <span class="text-sm ml-1 text-gray-500 font-normal">${targetDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span></h3>
+                            ${targetDate.toDateString() === todayStr ? '<span class="text-[10px] bg-[#a3d9a5] text-[#2e5932] px-[8px] py-[2px] rounded-full font-bold font-sans tracking-wide">Hoy</span>' : ''}
                         </div>
-                        <div class="flex flex-col gap-1">${evHtml}</div>
+                        <div class="flex flex-col">${evHtml}</div>
                     </div>`);
             }
         }
 
         function renderNotes() {
             notesContainer.innerHTML = '';
-            if (allNotes.length === 0) return notesContainer.innerHTML = `<div class="w-full flex flex-col items-center pt-20 text-gray-500 opacity-60"><i class="fas fa-leaf text-5xl mb-4"></i><p>Aún no hay notas.</p></div>`;
+            if (allNotes.length === 0) return notesContainer.innerHTML = `<div class="w-full flex flex-col items-center pt-24 text-gray-400 opacity-80"><i class="fas fa-leaf text-5xl mb-4"></i><p class="italic font-sans text-sm">Aún no hay notas.</p></div>`;
             const sortedNotes = [...allNotes].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             sortedNotes.forEach(note => {
                 const styleStr = getBorderStyle(note);
                 notesContainer.insertAdjacentHTML('beforeend', `
-                    <div style="${styleStr}" class="sketch-card p-4 w-full relative bg-transparent">
+                    <div style="${styleStr}" class="rounded-xl p-4 w-full mb-[15px] relative bg-transparent">
                         <div class="markdown-content text-gray-800 text-base font-sans mb-6 overflow-hidden">${marked.parse(note.content)}</div>
-                        <div class="absolute bottom-2 left-3 text-xs text-gray-500 font-sans">${new Date(note.createdAt).toLocaleDateString('es-ES')}</div>
-                        <button onclick="deleteNote('${note.id}')" class="absolute bottom-2 right-2 text-red-400 hover:text-red-600 sketch-btn w-6 h-6 flex items-center justify-center border-none"><i class="fas fa-trash-alt"></i></button>
+                        <div class="absolute bottom-2 left-3 text-[11px] text-gray-500 font-sans">${new Date(note.createdAt).toLocaleDateString('es-ES')}</div>
+                        <button onclick="deleteNote('${note.id}')" class="absolute bottom-2 right-2 text-red-400/80 hover:text-red-500 rounded w-6 h-6 flex items-center justify-center border-none"><i class="fas fa-trash-alt"></i></button>
                     </div>`);
             });
         }
@@ -653,8 +638,8 @@
                 const evHtml = dayEvents.map(e => `<div onclick="openEventDetail('${e.id}'); event.stopPropagation();" class="calendar-event ${e.completed ? 'bg-gray-300 text-gray-600 line-through' : ''}">${e.title}</div>`).join('');
                 const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
                 calendarGrid.innerHTML += `
-                    <div onclick="openForm('${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')" class="calendar-day p-1 cursor-pointer hover:bg-white/40 flex flex-col ${isToday ? 'border-2 border-[#2e5932] bg-[#e2f0e3]/40' : ''}">
-                        <span class="text-sm font-bold block text-right mb-1 ${isToday ? 'text-[#2e5932]' : 'text-gray-700'}">${day}</span>
+                    <div onclick="openForm('${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}')" class="calendar-day p-1 cursor-pointer hover:bg-black/5 flex flex-col ${isToday ? 'border-2 border-[#2e5932] bg-[#e2f0e3]/60' : 'bg-transparent'}">
+                        <span class="text-sm font-bold block text-right mb-1 ${isToday ? 'text-[#2e5932]' : 'text-gray-800'}">${day}</span>
                         <div class="flex-1 overflow-hidden flex flex-col gap-[1px]">${evHtml}</div>
                     </div>`;
             }
