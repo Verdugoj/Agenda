@@ -90,6 +90,11 @@
             background-color: var(--bg-cream);
         }
 
+        /* Específico para sobrescribir y hacer transparente en la lista */
+        .sketch-card.bg-transparent {
+            background-color: transparent !important;
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -320,14 +325,9 @@
 
     <!-- PWA & Local Storage Logic -->
     <script>
-        // Registro del Service Worker para que sea instalable
         if ('serviceWorker' in navigator) {
           window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').then(registration => {
-              console.log('SW registrado con éxito');
-            }).catch(err => {
-              console.log('Error al registrar SW:', err);
-            });
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Error:', err));
           });
         }
 
@@ -347,7 +347,6 @@
         const weekContainer = document.getElementById('week-container');
         const notesContainer = document.getElementById('notes-container');
 
-        // Llaves para Local Storage
         const STORAGE_EVENTS = 'agenda_eventos_v1';
         const STORAGE_NOTES = 'agenda_notas_v1';
 
@@ -391,13 +390,14 @@
 
         function getBorderStyle(item) {
             const type = item.borderType || 'normal';
-            if (type === 'important') return 'border-color: #eab308; border-width: 3px;';
-            if (type === 'urgent') return 'border-color: #ef4444; border-width: 3px;';
-            if (type === 'custom') return `border-color: ${item.borderColor1 || '#4a5568'}; border-width: 3px;`;
+            // Ajuste del color amarillo para igualar el de la imagen de muestra y mantener el border-radius intacto
+            if (type === 'important') return 'border-color: #facc15; border-width: 2px;';
+            if (type === 'urgent') return 'border-color: #ef4444; border-width: 2px;';
+            if (type === 'custom') return `border-color: ${item.borderColor1 || '#4a5568'}; border-width: 2px;`;
             if (type === 'combined') {
                 const c1 = item.borderColor1 || '#3b82f6';
                 const c2 = item.borderColor2 || '#ec4899';
-                return `border-width: 3px; border-style: solid; border-image: linear-gradient(45deg, ${c1}, ${c2}) 1;`;
+                return `border-width: 2px; border-style: solid; border-image: linear-gradient(45deg, ${c1}, ${c2}) 1;`;
             }
             return ''; 
         }
@@ -576,16 +576,17 @@
                 const isCompleted = ev.completed ? 'checked' : ''; const textClass = ev.completed ? 'line-through opacity-50' : '';
                 const styleStr = getBorderStyle(ev);
                 
+                // bg-transparent añadido para que las líneas crucen el recuadro igual que en la imagen
                 listContainer.insertAdjacentHTML('beforeend', `
-                    <div style="${styleStr}" class="sketch-card p-3 flex gap-3 items-center relative cursor-pointer hover:bg-white/80" onclick="openEventDetail('${ev.id}')">
+                    <div style="${styleStr}" class="sketch-card bg-transparent p-3 flex gap-3 items-center relative cursor-pointer hover:bg-black/5" onclick="openEventDetail('${ev.id}')">
                         <div class="pl-1" onclick="event.stopPropagation()"><input type="checkbox" class="sketch-checkbox" ${isCompleted} onchange="toggleEventStatus('${ev.id}', this.checked, event)"></div>
                         <div class="flex flex-col items-center justify-center min-w-[45px] ${textClass}">
-                            <span class="text-xs font-bold text-[#2e5932]/80 uppercase leading-none">${dateObj.toLocaleDateString('es-ES', { weekday: 'short' })}</span>
+                            <span class="text-xs font-bold text-[#2e5932] uppercase leading-none mb-1">${dateObj.toLocaleDateString('es-ES', { weekday: 'short' })}</span>
                             <span class="text-2xl font-bold text-gray-800 leading-none">${dateObj.getDate()}</span>
                         </div>
-                        <div class="flex-1 min-w-0 border-l-2 border-dashed border-gray-300 pl-3 ${textClass}">
-                            <h3 class="text-lg font-bold text-gray-900 truncate">${ev.title}</h3>
-                            <div class="text-xs text-gray-600 font-sans"><i class="far fa-clock"></i> ${dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
+                        <div class="flex-1 min-w-0 border-l border-dashed border-[#a0aec0] pl-3 py-1 ${textClass}">
+                            <h3 class="text-lg font-bold text-gray-900 truncate leading-tight">${ev.title}</h3>
+                            <div class="text-[11px] text-gray-500 font-sans mt-1"><i class="far fa-clock"></i> ${dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
                         </div>
                         <button onclick="deleteEvent('${ev.id}', event)" class="w-8 h-8 rounded-full text-red-400 hover:text-red-600 flex items-center justify-center z-10"><i class="fas fa-trash-alt"></i></button>
                     </div>`);
@@ -617,7 +618,7 @@
 
                 const isCentral = i === 0;
                 weekContainer.insertAdjacentHTML('beforeend', `
-                    <div class="sketch-card p-3 mb-2 flex flex-col gap-2 relative ${isCentral ? 'border-[#2e5932] border-2 bg-[#e2f0e3] shadow-md scale-[1.02] my-4 z-10' : 'bg-white/60'}" ${!isCentral ? `onclick="centralWeekDate = new Date(${targetDate.getFullYear()}, ${targetDate.getMonth()}, ${targetDate.getDate()}, 12, 0, 0); updateViews();"` : ''}>
+                    <div class="sketch-card p-3 mb-2 flex flex-col gap-2 relative ${isCentral ? 'border-[#2e5932] border-2 bg-[#e2f0e3] shadow-md scale-[1.02] my-4 z-10' : 'bg-transparent'}" ${!isCentral ? `onclick="centralWeekDate = new Date(${targetDate.getFullYear()}, ${targetDate.getMonth()}, ${targetDate.getDate()}, 12, 0, 0); updateViews();"` : ''}>
                         <div class="flex justify-between items-center border-b border-dashed border-gray-300 pb-1 mb-1">
                             <h3 class="font-bold ${isCentral ? 'text-[#2e5932] text-lg' : 'text-gray-600'}">${targetDate.toLocaleDateString('es-ES', { weekday: 'long' })} <span class="text-sm ml-1 text-gray-500">${targetDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span></h3>
                             ${targetDate.toDateString() === todayStr ? '<span class="text-xs bg-[#a3d9a5] text-[#2e5932] px-2 rounded-full font-bold font-sans">Hoy</span>' : ''}
@@ -634,7 +635,7 @@
             sortedNotes.forEach(note => {
                 const styleStr = getBorderStyle(note);
                 notesContainer.insertAdjacentHTML('beforeend', `
-                    <div style="${styleStr}" class="sketch-card p-4 w-full relative bg-white/70">
+                    <div style="${styleStr}" class="sketch-card p-4 w-full relative bg-transparent">
                         <div class="markdown-content text-gray-800 text-base font-sans mb-6 overflow-hidden">${marked.parse(note.content)}</div>
                         <div class="absolute bottom-2 left-3 text-xs text-gray-500 font-sans">${new Date(note.createdAt).toLocaleDateString('es-ES')}</div>
                         <button onclick="deleteNote('${note.id}')" class="absolute bottom-2 right-2 text-red-400 hover:text-red-600 sketch-btn w-6 h-6 flex items-center justify-center border-none"><i class="fas fa-trash-alt"></i></button>
